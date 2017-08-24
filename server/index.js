@@ -32,16 +32,36 @@ passport.use(new Auth0Strategy({
     console.log(profile);
 
     done(null, profile);
-    
+
 }));
 
 app.get('/auth', passport.authenticate('auth0'));
+
+passport.serializeUser(function (user, done) {
+    done(null, user);
+});
+
+passport.deserializeUser(function (obj, done) {
+    done(null, obj);
+});
 
 app.get('/auth/callback', passport.authenticate('auth0', {
     successRedirect: 'http://localhost:3000/',
     failureRedirect: 'http://localhost:3000/'
 }))
 
+app.get('/auth/me', (req, res, next) => {
+    if(!req.user) {
+        return res.status(404).send('User not found');
+    } else {
+        return res.status(200).send(req.user);
+    }
+})
+
+app.get('/auth/logout', (req, res) => {
+    req.logOut();
+    return res.redirect(302, 'http://localhost:3000/')
+})
 
 app.listen(port, () => {
     console.log(`Now listening on port ${port}.`)
